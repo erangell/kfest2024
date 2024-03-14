@@ -1,6 +1,7 @@
 *Ideas for Kansasfest 2024*
 
 *MareMac* directory has modifications to WindsMARE to run on a modern Mac.  It can also run on a Raspberry Pi.
+- Demonstration video: https://www.youtube.com/watch?v=AJy6N0oJASQ
 - When you are done using your personal MUD, type: @shutdown
 - The database for the MUD is stored in the run/db directory with name mdb.
 - To back up the database, copy the mdb file to a new name.
