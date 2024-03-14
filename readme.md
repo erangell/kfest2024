@@ -1,6 +1,6 @@
 *Ideas for Kansasfest 2024*
 
-- MareMac directory has modifications to WindsMARE to run on a modern Mac
+- MareMac directory has modifications to WindsMARE to run on a modern Mac.  It can also run on a Raspberry Pi.
   - For information about WindsMARE: https://mare.hoardersheaven.net/
   - Help documentation for WindsMARE: https://www.winds.org/helptext/
   - Recommended MUD client for people new to MUDs: https://www.mudlet.org/
