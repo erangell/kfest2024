@@ -1,0 +1,417 @@
+#!/bin/sh
+#
+# Configures TinyMARE for Compilation  - updated May 19 2003  Gandalf
+
+trap "echo [m;rm -f test.c test;exit 1" 1 2 3
+
+makefile()
+{
+  # Manage flags
+
+  if [ "$flags" = "none" ]; then flags=""; fi
+  if [ "$libs" = "none" ]; then libs=""; fi
+
+  # Optimization/debugging settings
+
+  if [ "$debug" != "0" ]; then
+    flags="-ggdb$debug $flags";
+  elif [ -z "`echo $sysname | grep -i cygwin`" ]; then
+    flags="$flags -fomit-frame-pointer";
+  fi
+
+  if [ "$opt" != "0" ]; then flags="-O$opt $flags"; fi
+
+  # Write config.in
+
+  echo "CC = $cc" > config.in
+  echo "CFLAGS = $flags -I\${HDRS}" >> config.in
+  if [ -n "`echo $sysname | grep -i cygwin`" ]; then
+    echo "LDFLAGS = -mwindows" >> config.in
+  fi
+  if [ -n "$libs" ]; then
+    echo "LDLIBS = $libs" >> config.in
+  fi
+
+  echo 'SUBDIRS = comm db game io prog mare' >> config.in
+  echo >> config.in
+  echo 'LIBS = ../game/libgame.a ../comm/libcomm.a ../db/libdb.a ../io/libio.a \
+       ../prog/libprog.a' >> config.in
+
+  echo >> config.in
+  if [ "`echo $sysname | grep -i cygwin`" ]; then
+    echo "CYGWIN=.exe" >> config.in
+  fi
+  if [ "`echo $libs | grep iberty`" ]; then
+    echo "ULIBS=-liberty" >> config.in
+  fi
+
+  # Write hdrs/main.h
+
+  echo '/* hdrs/main.h */
+/* Automatically generated from "configure" script. Do not edit by hand. */
+
+#define DEFAULT_MUDNAME	"'$mudname'"
+#define DEFAULT_PORT	'$port'
+
+#define DEFAULT_EMAIL	"'$tech_email'"
+' > hdrs/main.h
+
+  if [ "$pthread" = "1" ]; then echo "#define USE_PTHREADS" >> hdrs/main.h; fi
+
+  echo >> hdrs/main.h
+
+  if [ "$stack" = "1" ]; then echo "#define STACK_GROWS_DOWN" >> hdrs/main.h;fi
+  if [ "$sizeof_long" = "8" ]; then echo "#define ARCH_64BIT" >> hdrs/main.h;fi
+}
+
+
+title()
+{
+echo "[2J[H
+ .-------------------------------------------------------------------------.
+ |                                                                         |[30;1m-.[0m
+ |      [31m.[1m-[33;5m~[0;33m~[32m~[1m~[36m~[0;36m-[34m-[1;5m_               [0;1;31m.[33m~[0;33m~[32m~[1m.[0m                                     |[30;1m |[0m
+ |     [35m|          [1m~[0;35m.             [5;31m\`[0;1;33m- [32m.[36m|            [33m.[0m                        |[30;1m |[0m
+ |     [31m\`[1m-[33m_[0;33m_[32m-[1;5m'[0;31m      |[1m.              [32m|       [36;1m.      [33m|            [30m.[0m           |[30;1m |[0m
+ |                  [1;31m|[33m.           .[0;33m| [1;32mo  [36m.   |      [33m|     [31m_[0m                  |[30;1m |[0m
+ |                   [33m|[32;5m.[0;1;36m .[0;36m|[34m.     [1;33m.[0;5;33m|[0;1;32m  |  [36m|\  |   [33m.-.|   [31m.| \     [0m|           |[30;1m |[0m
+ |                    [32m|[1m.[36m| [0;34m|[1;5m.[0;1;31m   .[33m|   [32m|  [36m| \ | .[33m|   |   [31m|   |    [0m|           |[30;1m |[0m
+ |                     [1;36m|   [35m|[0;35m. [1;31m.[33m|   [32m/'.[36m/   ~\`-' [33m\`--'\`-[31m'  \`-'[0m----[1;5m*[0m---- [1;30m-[0m     |[30;1m |[0m
+ |                           [5;31m|[0;34m     ------------------------    [0m|           |[30;1m |[0m
+ |                           [31m|      [35mM      A      R      E     [0m|           |[30;1m |[0m
+ |                                                                         |[30;1m |[0m
+ |                                                                         [0m|[30;1m |[0m
+ \`-------------------------------------------------------------------------'[1;30m |[0m
+   [1;30m\`-------------------------------------------------------------------------'[0m
+[14;22H[1m- $arch_version Installation -
+[18;6HCopyright 2003 by GRDL Resources and AI Offices, All Rights Reserved[m
+"
+  sleep 2
+}
+
+defaultconfig()
+{
+  echo "[1;35mP[;35ml[34me[1ma[36ms[;36me [32mW[1ma[33mi[;33mt[31m.[1m.[35m.[37m Loading $sysname System Configuration[m"
+  sleep 3
+
+  # Check for the existence of GCC
+  gcc --version &> /dev/null
+  if [ "$?" = "0" ]; then
+    cc=gcc
+  else
+    cc=cc
+  fi
+
+  opt=3
+  debug=0
+  flags=none
+  libs=none
+  mudname=TinyMARE
+  port=7348
+
+  # Default Email Address
+
+  if [ -z "`whoami`" ]; then
+    userid=root
+  else
+    userid=`whoami`
+  fi
+  if [ -n "`hostname | grep .`" -o -z "`domainname`" ]; then
+    tech_email=$userid@`hostname`
+  else
+    if [ -z "`domainname | grep ^.`" ]; then
+      tech_email=$userid@`hostname`.`domainname`
+    else
+      tech_email=$userid@`hostname``domainname`
+    fi
+  fi
+
+  pthread=0
+
+  # Find additional libraries required by the compiler
+
+  for i in /lib /usr/lib /usr/local/lib; do
+    if [ -d $i ]; then libdirs="$libdirs $i"; fi
+  done
+
+  for i in resolv; do
+    if [ -n "`ls $libdirs | grep -i lib$i`" ]; then
+      libs="$libs -l$i"
+    fi
+  done
+
+  # Architecture-dependent compiler flags
+
+  if [ "$machine" = "ia64" ]; then
+    flags="$flags -mbig-endian"
+  fi
+
+  # Additional compiler flags matched by system type
+
+  flags="$flags -Wall"
+  if [ -n "`echo $sysname | grep -i Unix_S`" ]; then
+    libs="$libs -lsocket -lgen -L/usr/ucblib -lucb"
+    flags="$flags -I/usr/ucbinclude"
+  elif [ -n "`echo $sysname | grep -i sun`" ]; then
+    if [ -n "`echo $revision | grep -i '^4'`" ]; then
+      flags="$flags -D_SUN_4"
+      libs="$libs -liberty -lnsl"
+    else
+      libs="$libs -lmalloc -lsocket -lnsl"
+    fi
+  fi
+
+  # Don't warn about pointer signedness
+  $cc -E -Werror -Wpointer-sign -x c /dev/null &> /dev/null
+  if [ "$?" = "0" ]; then
+    flags="$flags -Wno-pointer-sign"
+  fi
+
+  # Don't warn about snprintf() truncation
+  $cc -E -Werror -Wformat-truncation -x c /dev/null &> /dev/null
+  if [ "$?" = "0" ]; then
+    flags="$flags -Wno-format-truncation"
+  fi
+
+  # Include math library
+
+  libs="$libs -lm"
+
+  flags=`echo $flags | cut -d ' ' -f 2-`
+  libs=`echo $libs | cut -d ' ' -f 2-`
+  if [ -z "$flags" ]; then flags=none; fi
+  if [ -z "$libs" ]; then libs=none; fi
+}
+  
+saveconfig()
+{
+  echo 'cc="'$cc'"' > .config
+  echo 'opt="'$opt'"' >> .config
+  echo 'debug="'$debug'"' >> .config
+  echo 'flags="'$flags'"' >> .config
+  echo 'libs="'$libs'"' >> .config
+  echo 'mudname="'$mudname'"' >> .config
+  echo 'port="'$port'"' >> .config
+  echo 'tech_email="'$tech_email'"' >> .config
+  echo 'pthread="'$pthread'"' >> .config
+}
+
+
+# Program Begin
+
+# Load previous configuration
+
+if [ ! -f mare/version.c ]; then
+  echo "
+No configuration settings present.
+Please execute the 'configure' command in the mare/src directory.
+"
+  exit 1
+fi
+
+# Find method of stripping the newline character in prompts
+
+if [ -n "`echo 'test\c' | grep c`" ]; then
+  ac_n=-n ac_c=
+else
+  ac_n= ac_c="\c"
+fi
+
+# Determine system versions and tinymare patchlevels
+
+machine=`uname -m`
+sysname=`uname -s`
+revision=`uname -r`
+version=`grep mud_version mare/version.c | cut -d '"' -f 2`
+arch_version=`grep mud_version mare/version.c | cut -d '"' -f 2 |\
+              cut -d '.' -f 1-3`
+build_date=`grep mud_compile_date mare/version.c | cut -d '"' -f 2`
+
+title
+
+if [ ! -f .config ]; then
+  defaultconfig
+else
+  . ./.config
+fi
+
+echo "[2J[H[1m$arch_version
+[36m~~~~~~~~~~~~~~~~~~~[m
+
+
+TinyMARE requires the GNU Compiler Collection (GCC) versions 2.8.0 and above
+to compile. It uses several features and extensions of GCC not found in other
+compilers to enhance the code base for optimal performance in both size and
+speed. It has been successfully compiled on the following platforms:
+
+  Linux   v2.2.0+, 2.4.0+	x86, alpha, sparc, ia64, mips-ps2
+  FreeBSD v3.0+                 x86, sparc
+  NetBSD  v4.0
+  Ultrix  v4.4
+  BSDUnix v4.0
+  SunOS   v4.1.3, (Solaris) 5.1+
+  OSF1    v4.1, 5.0
+  HP-UX   v10.2, v11.0
+
+Modify the following to suit your system.
+"
+echo $ac_n "[1;32mSelect the command for compiling: [34m[[31m$cc[34m] [33m"$ac_c
+read choice
+if [ -n "$choice" ]; then cc=`echo "$choice" | cut -d' ' -f1`; fi
+
+echo "[m
+Most modern compilers have the ability to optimize TinyMARE's performance at
+the cost of extra compiling time and extra space needed on the hard disk.
+The level specified may be from 0 to 3, although we recommend level 2 for
+most optimizations except inline functions and loop unrolling.
+"
+
+while true; do
+  echo $ac_n "[1;32mEnter compiler optimization level: [34m[[31m$opt[34m] [33m"$ac_c
+  read choice
+  if [ -z "$choice" ]; then
+    break
+  elif [ "$choice" = "s" ]; then
+    opt=s
+    break
+  elif [ "$choice" -ge "0" -a "$choice" -le "3" ]; then
+    opt=$choice
+    break
+  fi
+  echo "[1;31mOptimization level must be from 0 to 3.[m"
+  echo
+done
+
+echo "[m
+Many compilers also offer debugging information, read by the 'gdb' command,
+to be available to the common programmer practicing different additions of
+code into the server. If you are low on disk space, do not necessarily care
+about debugging information, and wish to automatically strip netmare when
+compilation is finished, then set the following to 0. A higher debugging
+level specified means the larger your object files will become, but it
+allows for easier debugging to determine any problem with the code.
+The level specified must be from 0 to 3.
+"
+while true; do
+  echo $ac_n "[1;32mEnter compiler debugging level: [34m[[31m$debug[34m] [33m"$ac_c
+  read choice
+  if [ -z "$choice" ]; then break; fi
+  if [ "$choice" -lt "0" -o "$choice" -gt "3" ]; then
+    echo "[1;31mDebugging level must be from 0 to 3.[m"
+    echo
+    continue
+  fi
+  debug=$choice
+  break
+done
+
+echo "[m
+The following two options specify extra flags and libraries to pass to
+your compiler. Extra libraries required for linking must be preceded by
+a -l (ell). Use the keyword 'none' if you do not need any extra flags,
+or press return to accept the defaults.
+"
+echo $ac_n "[1;32mExtra flags to pass to your compiler: [34m[[31m$flags[34m] [33m"$ac_c
+read choice
+if [ -n "$choice" ]; then
+  flags=$choice
+fi
+
+echo "[m"
+echo $ac_n "[1;32mExtra libraries required for linking: [34m[[31m$libs[34m] [33m"$ac_c
+read choice
+if [ -n "$choice" ]; then
+  libs=$choice
+fi
+
+echo "[m
+[1mGame Settings:[m
+
+Now you must choose a name for your MARE. We suggest that this name
+should be typed in proper form, with the word MARE capitalized at the
+end. This is only used as the default name for starting up a new
+database. Any name up to 20 characters in length is acceptable.
+"
+echo $ac_n "[1;32mPlease enter the name of the game: [34m[[31m$mudname[34m] [33m"$ac_c
+read choice
+if [ -n "$choice" ]; then mudname=$choice; fi
+
+while true; do
+  echo "[m
+One network port on `hostname` must be specified for TinyMARE.
+The default port is 7348, yet any number between 1024 and 9999 is
+acceptable for general users.
+"
+  echo $ac_n "[1;32mPlease enter the port $mudname should be on: [34m[[31m$port[34m] [33m"$ac_c
+  read choice
+  if [ -z "$choice" ]; then break; fi
+  if [ "$choice" -gt "9999" ]; then
+    echo "[1;31mThe port number must be 9999 or below.[m"
+    continue
+  fi
+  port=$choice
+  break
+done
+
+echo "[m
+The E-Mail address of the $mudname administration should be provided
+for users to address any technical questions about the game. This
+address is displayed in information lookup and is also shown at the
+time a user creates a new character.
+"
+echo $ac_n "[1;32mPlease enter a valid E-Mail address: [34m[[31m$tech_email[34m] [33m"$ac_c
+read choice
+if [ -n "$choice" ]; then tech_email=$choice; fi
+
+echo "[m"
+if [ "$flags" = "none" ]; then
+  cflags=""
+else
+  cflags="$flags"
+fi
+
+# Determine if stack grows up or down
+echo $ac_n "[1;33mChecking which way the stack grows... [37m"$ac_c
+stack=1
+rm -f test.c test
+if [ "$stack" = "1" ]; then
+  echo "down[m"
+elif [ "$stack" = "0" ]; then
+  echo "up[m"
+else
+  echo "compiler error[m"
+  echo
+  exit 1
+fi
+
+# Determine size of 'long' type
+echo $ac_n "[1;33mChecking size of long... [37m"$ac_c
+echo "int main() { return sizeof(long); }" > test.c
+$cc $cflags -w -O$opt test.c -o test 2> /dev/null > /dev/null
+./test 2> /dev/null > /dev/null
+sizeof_long=$?
+rm -f test.c test
+echo "$sizeof_long[m"
+
+echo $ac_n "[m
+
+[1;36mTinyMARE Settings Configured. Accept changes? [34m[[31mY/n[34m] [33m"$ac_c
+read choice
+if [ "$choice" = "n" -o "$choice" = "N" ]; then
+  echo "[m
+[1;31mConfiguration process aborted. Your TinyMARE Settings remain unchanged.[m
+"
+  exit 1
+fi
+
+saveconfig
+
+echo "
+[1;35mP[;35ml[34me[1ma[36ms[;36me [32mW[1ma[33mi[;33mt[31m.[1m.[35m.[37m Creating Makefile Headers[m
+"
+
+makefile
+
+echo "[1;33mSystem type $machine running $sysname, version $revision.[m"
+echo "[1;33mMakefile configured for $version, last built on $build_date[m"
+echo
