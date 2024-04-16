@@ -3,6 +3,8 @@
 A2PKEYSET.dsk has code for testing a Chord Keyset using Doug Engelbart's key mappings, with 2 simulated mouse buttons.
 See photo a2pKeysetSchematic.jpg for schematic.
 
+GUITAR.do is experimental code for controlling a Yamaha EZAG using a Passport MIDI interface in slot 2 of a 2+
+
 *MareMac* directory has modifications to WindsMARE to run on a modern Mac.  It can also run on a Raspberry Pi.
 - Demonstration video: https://www.youtube.com/watch?v=AJy6N0oJASQ
 - When you are done using your personal MUD, type: @shutdown
