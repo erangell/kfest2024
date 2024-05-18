@@ -20,3 +20,8 @@ GUITAR.do is experimental code for controlling a Yamaha EZAG using a Passport MI
   - View it as Guest or create a New character if you will be exploring it regularly
   - Note that it contains legacy MUDs that were imported, but certain functions may not work completely.
 
+Youtube Playlist about MUD technology:
+- https://www.youtube.com/watch?v=U604QuXfBNA&list=PLOW4_Hp8_912j1Tzu-zN40mpz4OEVzaFH&index=74
+
+To keep up with future research about Doug Engelbart's systems, follow this link:
+- https://workflowy.com/s/engelbart-visioning/a6NRhveBIrzJwQ5G#/5ee5ef10ca5c
