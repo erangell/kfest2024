@@ -5,6 +5,12 @@ See photo a2pKeysetSchematic.jpg for schematic.
 
 GUITAR.do is experimental code for controlling a Yamaha EZAG using a Passport MIDI interface in slot 2 of a 2+
 
+Thinktank by Living Videotext is the Apple ][ series precursor to what became MORE on the Mac.
+- Disk 1 (put in drive 1): https://archive.org/details/Thinktank_disk_1
+- Disk 2 (put in drive 2): https://archive.org/details/Thinktank_disk_2
+- Manual: https://archive.org/details/ThinkTank_Users_Manual
+- MORE v3.1: https://macintoshgarden.org/apps/more-31
+
 *MareMac* directory has modifications to WindsMARE to run on a modern Mac.  It can also run on a Raspberry Pi.
 - Demonstration video: https://www.youtube.com/watch?v=AJy6N0oJASQ
 - When you are done using your personal MUD, type: @shutdown
