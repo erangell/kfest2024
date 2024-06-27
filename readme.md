@@ -1,9 +1,15 @@
 *Ideas for Kansasfest 2024*
 
 A2PKEYSET.dsk has code for testing a Chord Keyset using Doug Engelbart's key mappings, with 2 simulated mouse buttons.
-See photo a2pKeysetSchematic.jpg for schematic.
+Schematic: a2pKeysetSchematic.jpg or pdf
+Key map: EngelbartKeysetMap.jpg or pdf
+Prototype: ProtoboardWithCorrectedSwitchCircuit.jpg
+Project: HomebrewKeysetTo14pinGameCable.jpg
 
 ![a2pKeysetSchematic.jpg](a2pKeysetSchematic.jpg)
+![EngelbartKeysetMap.jpg](EngelbartKeysetMap.jpg)
+![ProtoboardWithCorrectedSwitchCircuit.jpg](ProtoboardWithCorrectedSwitchCircuit.jpg)
+![HomebrewKeysetTo14pinGameCable.jpg](HomebrewKeysetTo14pinGameCable.jpg)
 
 GUITAR.do is experimental code for controlling a Yamaha EZAG using a Passport MIDI interface in slot 2 of a 2+
 
