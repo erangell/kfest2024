@@ -3,6 +3,8 @@
 A2PKEYSET.dsk has code for testing a Chord Keyset using Doug Engelbart's key mappings, with 2 simulated mouse buttons.
 See photo a2pKeysetSchematic.jpg for schematic.
 
+![a2pKeysetSchematic.jpg](a2pKeysetSchematic.jpg)
+
 GUITAR.do is experimental code for controlling a Yamaha EZAG using a Passport MIDI interface in slot 2 of a 2+
 
 Thinktank by Living Videotext is the Apple ][ series precursor to what became MORE on the Mac.
