@@ -1,5 +1,7 @@
 *Ideas for Kansasfest 2024*
 
+Youtube Playlist for this project: https://www.youtube.com/playlist?list=PLOW4_Hp8_912Di5FKevgXoY9uVlYNcfMM
+
 A2PKEYSET.dsk has code for testing a Chord Keyset using Doug Engelbart's key mappings, with 2 simulated mouse buttons.
 - Schematic: a2pKeysetSchematic.jpg or pdf
 - Prototype: ProtoboardWithCorrectedSwitchCircuit.jpg
